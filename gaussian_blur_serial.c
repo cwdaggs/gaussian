@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void gaussian_calc(unsigned char *image_mat, float *kernel, int width, int height, float order) 
+void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *kernel, int width, int height, float order) 
 {
     float val = 0;
 
@@ -15,14 +15,18 @@ void gaussian_calc(unsigned char *image_mat, float *kernel, int width, int heigh
             for (int x = 0; x < (int) order; x++) {
                 for (int y = 0; y < (int) order; y++) {
                     if (i < center && j < center) { //top left corner
-                        if (x < center && y < center) {
-                            val += (image_mat[i * height + j] * kernel[x * (int) order + y]);
-                        } else if (x < center && y > center) {
+                        if (x <= center - i && y <= center - j) {
+                            val += (image_mat[0] * kernel[x * (int) order + y]);
+                            // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[0], x, y, i, j);
+                        } else if (x < center - i && y > center - j) {
                             val += (image_mat[i * height + j + (y - center)] * kernel[x * (int) order + y]);
-                        } else if (y < center && x > center) {
+                            // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
+                        } else if (y < center - j && x > center - i) {
                             val += (image_mat[(i + (x - center)) * height + j] * kernel[x * (int) order + y]);
+                            // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height], x, y, i, j);
                         } else {
                             val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
+                            // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
                         }
                     } else if (i < center && (j >= center && j <= width - center - 1)) { //top edge
                         if (x < center - i) {
@@ -59,7 +63,7 @@ void gaussian_calc(unsigned char *image_mat, float *kernel, int width, int heigh
                     }
                 }
             }
-            image_mat[i * height + j] = (unsigned char) val; 
+            result_mat[i * height + j] = (unsigned char) val; 
             val = 0;
         }
     }
@@ -133,6 +137,7 @@ int main(int argc, char *argv[])
 
     float *kernel = aligned_alloc(64, (int) order * (int) order * sizeof(float));
     unsigned char *image_mat = aligned_alloc(64, width * height * sizeof(unsigned char));
+    unsigned char *result_mat = aligned_alloc(64, width * height * sizeof(unsigned char));
 
     if (fread(image_mat, sizeof(unsigned char), height * width, input_file) != (size_t)(height * width)) {
         exit(1);
@@ -143,7 +148,9 @@ int main(int argc, char *argv[])
         for (int j = 0; j < order; j++) {
             kernel[i * (int) order + j] = (1/(2*M_PI*sigma*sigma)) * 
             exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
+            // printf("%.8f ", kernel[i * (int) order + j]);
         }
+        // printf("\n");
     }
 
 	/* Align allocation on a cache line (64 bytes) */
@@ -153,9 +160,9 @@ int main(int argc, char *argv[])
 	// mandel_calc(mandelmap, N, x_coord, y_coord, zoom_level, cutoff);
 
 	// /* Save output image */
-    gaussian_calc(image_mat, kernel, width, height, order);
+    gaussian_calc(image_mat, result_mat, kernel, width, height, order);
 
-	write_mandelmap(output_filename, image_mat, width, height);
+	write_mandelmap(output_filename, result_mat, width, height);
     
 	// free(filename);
 
