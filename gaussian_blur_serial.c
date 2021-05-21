@@ -19,10 +19,10 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
                             val += (image_mat[0] * kernel[x * (int) order + y]);
                             // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[0], x, y, i, j);
                         } else if (x < center - i && y > center - j) {
-                            val += (image_mat[i * height + j + (y - center)] * kernel[x * (int) order + y]);
+                            val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
                             // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
                         } else if (y < center - j && x > center - i) {
-                            val += (image_mat[(i + (x - center)) * height + j] * kernel[x * (int) order + y]);
+                            val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
                             // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height], x, y, i, j);
                         } else {
                             val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
