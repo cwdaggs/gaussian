@@ -1,3 +1,7 @@
 *.pgm
 ref_gaussian_blur_cuda
 ref_gaussian_blur_serial
+*.json
+Makefile
+gaussian_blur_serial
+gaussian_blur_cuda
