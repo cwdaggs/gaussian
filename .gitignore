@@ -5,3 +5,4 @@ ref_gaussian_blur_serial
 Makefile
 gaussian_blur_serial
 gaussian_blur_cuda
+differences
