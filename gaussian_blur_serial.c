@@ -32,7 +32,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
                         
                         if (x < center - i) {
                             // printf("entered top edge");
-                            val += (image_mat[i * height + j + (y - center)] * kernel[x * (int) order + y]);
+                            val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
                             // if (i == 2 && j == 10) {
                             //     printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
                             // }
@@ -46,7 +46,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
                        
                         if (i + x > height + center - 1) {
                             // printf("entered bottom edge");
-                            val += (image_mat[i * height + j + (y - center)] * kernel[x * (int) order + y]);
+                            val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
                         } else {
                             val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
                         }
@@ -54,7 +54,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
                         
                         if (y < center - j) {
                             // printf("entered left edge");
-                            val += (image_mat[(i + (x - center)) * height + j] * kernel[x * (int) order + y]);
+                            val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
                         } else {
                             val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
                         }
@@ -62,7 +62,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
                         
                         if (j + y > width + center - 1) {
                             // printf("entered right edge");
-                            val += (image_mat[(i + (x - center)) * height + j] * kernel[x * (int) order + y]);
+                            val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
                         } else {
                             val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
                         }
@@ -94,8 +94,20 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
                             val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
                             // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
                         }
-                    } else if (i > height - center && j > width - center) { //bottom right corner
-                        continue;
+                    } else if (i > height - center - 1 && j > width - center - 1) { //bottom right corner
+                        if (i + x >= height + center - 1 && j + y >= width + center - 1) {
+                            val += (image_mat[height * (height - 1) + width - 1] * kernel[x * (int) order + y]);
+                            // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[height * (height - 1) + width - 1], x, y, i, j);
+                        } else if (i + x > height + center - 1 && j + y < width + center - 1) {
+                            val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
+                            // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
+                        } else if (j + y > width + center - 1 && i + x < height + center - 1) {
+                            val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
+                            // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + width - 1], x, y, i, j);
+                        } else {
+                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
+                            // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
+                        }
                     } else {
                         val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
                     }
