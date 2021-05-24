@@ -14,100 +14,22 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
         for (int j = 0; j < width; j++) {
             for (int x = 0; x < (int) order; x++) {
                 for (int y = 0; y < (int) order; y++) {
-                    if (i < center && j < center) { //top left corner
-                        if (x <= center - i && y <= center - j) {
-                            val += (image_mat[0] * kernel[x * (int) order + y]);
-                            // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[0], x, y, i, j);
-                        } else if (x < center - i && y > center - j) {
-                            val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
-                        } else if (y < center - j && x > center - i) {
-                            val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
-                            // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height], x, y, i, j);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
-                        }
-                    } else if (i < center && (j >= center && j <= width - center - 1)) { //top edge
-                        
-                        if (x < center - i) {
-                            // printf("entered top edge");
-                            val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
-                            // if (i == 2 && j == 10) {
-                            //     printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
-                            // }
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                            // if (i == 2 && j == 10) {
-                            //     printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
-                            // }
-                        }
-                    } else if (i > height - center - 1 && (j >= center && j <= width - center - 1)) { //bottom edge
-                       
-                        if (i + x > height + center - 1) {
-                            // printf("entered bottom edge");
-                            val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                        }
-                    } else if (j < center && (i >= center && i <= height - center - 1)) { //left edge
-                        
-                        if (y < center - j) {
-                            // printf("entered left edge");
-                            val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                        }
-                    } else if (j > width - center - 1 && (i >= center && i <= height - center - 1)) { //right edge
-                        
-                        if (j + y > width + center - 1) {
-                            // printf("entered right edge");
-                            val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                        }
-                    } else if (j > width - center - 1 && i < center) { //top right corner
-                         if (x <= center - i && j + y >= width + center - 1) {
-                            val += (image_mat[width - 1] * kernel[x * (int) order + y]);
-                            // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[width - 1], x, y, i, j);
-                        } else if (x < center - i && j + y < width + center - 1) {
-                            val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
-                        } else if (j + y >= width + center - 1 && x > center - i) {
-                            val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
-                            // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + width - 1], x, y, i, j);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
-                        }
-                    } else if (i > height - center - 1 && j < center) { // bottom left corner
-                        if (i + x >= height + center - 1 && y <= center - j) {
-                            val += (image_mat[height * (height - 1)] * kernel[x * (int) order + y]);
-                            // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[height * (height - 1)], x, y, i, j);
-                        } else if (i + x > height + center - 1 && y > center - j) {
-                            val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[height * (height - 1) + j + (y - center)], x, y, i, j);
-                        } else if (y < center - j && i + x < height + center - 1) {
-                            val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
-                            // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height], x, y, i, j);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
-                        }
-                    } else if (i > height - center - 1 && j > width - center - 1) { //bottom right corner
-                        if (i + x >= height + center - 1 && j + y >= width + center - 1) {
-                            val += (image_mat[height * (height - 1) + width - 1] * kernel[x * (int) order + y]);
-                            // printf("1: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[height * (height - 1) + width - 1], x, y, i, j);
-                        } else if (i + x > height + center - 1 && j + y < width + center - 1) {
-                            val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("2: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[j + (y - center)], x, y, i, j);
-                        } else if (j + y > width + center - 1 && i + x < height + center - 1) {
-                            val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
-                            // printf("3: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + width - 1], x, y, i, j);
-                        } else {
-                            val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                            // printf("4: Using %i for [%d][%d]: ij[%d][%d]\n", image_mat[(i + (x - center)) * height + j + (y - center)], x, y, i, j);
-                        }
+                    if (x <= center - i && y <= center - j) {
+                        val += (image_mat[0] * kernel[x * (int) order + y]);
+                    } else if (x <= center - i && j + y >= width + center - 1) {
+                        val += (image_mat[width - 1] * kernel[x * (int) order + y]);
+                    } else if (i + x >= height + center - 1 && y <= center - j) {
+                        val += (image_mat[height * (height - 1)] * kernel[x * (int) order + y]);
+                    } else if (i + x >= height + center - 1 && j + y >= width + center - 1) {
+                        val += (image_mat[height * (height - 1) + width - 1] * kernel[x * (int) order + y]);
+                    } else if (x < center - i) {
+                        val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
+                    } else if (y < center - j) {
+                        val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
+                    } else if (i + x > height + center - 1) {
+                        val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
+                    } else if (j + y > width + center - 1) {
+                        val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
                     } else {
                         val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
                     }
@@ -208,30 +130,17 @@ int main(int argc, char *argv[])
         for (int j = 0; j < order; j++) {
             kernel[i * (int) order + j] = exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
             sum += exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
-            // printf("%.8f ", kernel[i * (int) order + j]);
         }
-        // printf("\n");
     }
 
     for (int i = 0; i < order; i++) {
         for (int j = 0; j < order; j++) {
             kernel[i * (int) order + j] /= sum;
-            // printf("%.8f ", kernel[i * (int) order + j]);
         }
-        // printf("\n");
     }
     
-
-
-	/* Align allocation on a cache line (64 bytes) */
-	// mandelmap = aligned_alloc(64, N * N * sizeof(char));
-
-	// /* !!! Calling your implementation !!! */
-	// mandel_calc(mandelmap, N, x_coord, y_coord, zoom_level, cutoff);
-
-	// /* Save output image */
     gaussian_calc(image_mat, result_mat, kernel, width, height, order);
-
+    // /* Save output image */
 	write_mandelmap(output_filename, result_mat, width, height);
     
 	// free(filename);
