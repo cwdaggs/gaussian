@@ -1,9 +1,10 @@
 #include <limits.h>
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *kernel, int width, int height, float order) 
 {
@@ -14,28 +15,31 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
         for (int j = 0; j < width; j++) {
             for (int x = 0; x < (int) order; x++) {
                 for (int y = 0; y < (int) order; y++) {
-                    if (x <= center - i && y <= center - j) {
-                        val += (image_mat[0] * kernel[x * (int) order + y]);
-                    } else if (x <= center - i && j + y >= width + center - 1) {
-                        val += (image_mat[width - 1] * kernel[x * (int) order + y]);
-                    } else if (i + x >= height + center - 1 && y <= center - j) {
-                        val += (image_mat[height * (height - 1)] * kernel[x * (int) order + y]);
-                    } else if (i + x >= height + center - 1 && j + y >= width + center - 1) {
-                        val += (image_mat[height * (height - 1) + width - 1] * kernel[x * (int) order + y]);
-                    } else if (x < center - i) {
-                        val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
-                    } else if (y < center - j) {
-                        val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
-                    } else if (i + x > height + center - 1) {
-                        val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
-                    } else if (j + y > width + center - 1) {
-                        val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
-                    } else {
-                        val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
-                    }
+                    int mat_x = MAX(0, MIN(i + x - center, height - 1));
+                    int mat_y = MAX(0, MIN(j + y - center, width - 1));
+                    val += image_mat[mat_x * width + mat_y] * kernel[x * (int) order + y];
+                    // if (x <= center - i && y <= center - j) {
+                    //     val += (image_mat[0] * kernel[x * (int) order + y]);
+                    // } else if (x <= center - i && j + y >= width + center - 1) {
+                    //     val += (image_mat[width - 1] * kernel[x * (int) order + y]);
+                    // } else if (i + x >= height + center - 1 && y <= center - j) {
+                    //     val += (image_mat[height * (height - 1)] * kernel[x * (int) order + y]);
+                    // } else if (i + x >= height + center - 1 && j + y >= width + center - 1) {
+                    //     val += (image_mat[height * (height - 1) + width - 1] * kernel[x * (int) order + y]);
+                    // } else if (x < center - i) {
+                    //     val += (image_mat[j + (y - center)] * kernel[x * (int) order + y]);
+                    // } else if (y < center - j) {
+                    //     val += (image_mat[(i + (x - center)) * height] * kernel[x * (int) order + y]);
+                    // } else if (i + x > height + center - 1) {
+                    //     val += (image_mat[height * (height - 1) + j + (y - center)] * kernel[x * (int) order + y]);
+                    // } else if (j + y > width + center - 1) {
+                    //     val += (image_mat[(i + (x - center)) * height + width - 1] * kernel[x * (int) order + y]);
+                    // } else {
+                    //     val += (image_mat[(i + (x - center)) * height + j + (y - center)] * kernel[x * (int) order + y]);
+                    // }
                 }
             }
-            result_mat[i * height + j] = (unsigned char) val; 
+            result_mat[i * width + j] = (unsigned char) val; 
             val = 0;
         }
     }

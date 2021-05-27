@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define TILE_WIDTH 32
+
 #define DIV_ROUND_UP(n, d)  (((n) + (d) - 1) / (d))
 #define cuda_check(ret) _cuda_check((ret), __FILE__, __LINE__)
 inline void _cuda_check(cudaError_t ret, const char *file, int line) {
@@ -38,10 +38,10 @@ __global__ void gaussian_calc_kernel(unsigned char *image_mat, unsigned char *re
             // Max accounts for left and top edges
             int mat_x = max(0, min(i + x - center, height_d - 1));
             int mat_y = max(0, min(j + y - center, width_d - 1));
-            val += image_mat[mat_x * height_d + mat_y] * kernel[x * order_d + y];
+            val += image_mat[mat_x * width_d + mat_y] * kernel[x * order_d + y];
         }
     }
-    result_mat[i * height_d + j] = (unsigned char) val; 
+    result_mat[i * width_d + j] = (unsigned char) val; 
 }
 
 
@@ -63,7 +63,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
 
     /* Invoke kernel function */
     dim3 block_dim(32, 32);
-    dim3 grid_dim(DIV_ROUND_UP(height, block_dim.x), DIV_ROUND_UP(width, block_dim.y));
+    dim3 grid_dim(DIV_ROUND_UP(width, block_dim.x), DIV_ROUND_UP(height, block_dim.y));
     gaussian_calc_kernel<<<grid_dim, block_dim>>>(image_mat_d, result_mat_d, kernel_d);
 
     /* Copy result back to host */
