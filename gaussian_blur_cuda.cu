@@ -34,80 +34,16 @@ __global__ void gaussian_calc_kernel(unsigned char *image_mat, unsigned char *re
 
     for (int x = 0; x < order_d; x++) {
         for (int y = 0; y < order_d; y++) {
-            int mat_x = max(0, min(height_d - 1, i + x - center));
-            int mat_y = max(0, min(width_d - 1, j + y - center));
-
+            // Min accounts for right and bottom edges
+            // Max accounts for left and top edges
+            int mat_x = max(0, min(i + x - center, height_d - 1));
+            int mat_y = max(0, min(j + y - center, width_d - 1));
             val += image_mat[mat_x * height_d + mat_y] * kernel[x * order_d + y];
-            // if (x <= center - i && y <= center - j) {
-            //     val += (image_mat[0] * kernel[x * order_d + y]);
-            // } else if (x <= center - i && j + y >= width_d + center - 1) {
-            //     val += (image_mat[width_d - 1] * kernel[x * order_d + y]);
-            // } else if (i + x >= height_d + center - 1 && y <= center - j) {
-            //     val += (image_mat[height_d * (height_d - 1)] * kernel[x * order_d + y]);
-            // } else if (i + x >= height_d + center - 1 && j + y >= width_d + center - 1) {
-            //     val += (image_mat[height_d * (height_d - 1) + width_d - 1] * kernel[x * order_d + y]);
-            // } else if (x < center - i) {
-            //     val += (image_mat[j + (y - center)] * kernel[x * order_d + y]);
-            // } else if (y < center - j) {
-            //     val += (image_mat[(i + (x - center)) * height_d] * kernel[x * order_d + y]);
-            // } else if (i + x > height_d + center - 1) {
-            //     val += (image_mat[height_d * (height_d - 1) + j + (y - center)] * kernel[x * order_d + y]);
-            // } else if (j + y > width_d + center - 1) {
-            //     val += (image_mat[(i + (x - center)) * height_d + width_d - 1] * kernel[x * order_d + y]);
-            // } else {
-            //     val += (image_mat[(i + (x - center)) * height_d + j + (y - center)] * kernel[x * order_d + y]);
-            // }
         }
     }
     result_mat[i * height_d + j] = (unsigned char) val; 
-    val = 0;
 }
 
-
-// __global__ void gaussian_calc_kernel(unsigned char *image_mat, unsigned char *result_mat, float *kernel, int width, int height, float order) 
-// { // Shared memory implementation
-//     __shared__ unsigned char image_s[TILE_WIDTH][TILE_WIDTH];
-//     int tx = threadIdx.x;
-//     int ty = threadIdx.y;
-//     int j = blockIdx.x * TILE_WIDTH + tx; //col
-//     int i = blockIdx.y * TILE_WIDTH + ty; //row
-
-//     if (j >= height || i >= width) {
-//         return;
-//     }
-//     image_s[ty][tx] = image_mat[i * width + j];
-//     __syncthreads();
-//     float val = 0;
-    
-
-//     int center = ((int) order - 1) / 2;
-
-//     for (int x = 0; x < (int) order; x++) {
-//         for (int y = 0; y < (int) order; y++) {
-//             if (x <= center - i && y <= center - j) {
-//                 val += (image_s[0][0] * kernel[x * (int) order + y]);
-//             } else if (x <= center - i && j + y >= width + center - 1) {
-//                 val += (image_s[0][TILE_WIDTH - 1] * kernel[x * (int) order + y]);
-//             } else if (i + x >= height + center - 1 && y <= center - j) {
-//                 val += (image_s[TILE_WIDTH - 1][0] * kernel[x * (int) order + y]);
-//             } else if (i + x >= height + center - 1 && j + y >= width + center - 1) {
-//                 val += (image_s[TILE_WIDTH - 1][TILE_WIDTH - 1] * kernel[x * (int) order + y]);
-//             } else if (x < center - i) { //row too high
-//                 val += (image_s[0][j + (y - center)] * kernel[x * (int) order + y]);
-//             } else if (y < center - j) { // col too far left
-//                 val += (image_s[(i + (x - center)) * TILE_WIDTH][0] * kernel[x * (int) order + y]);
-//             } else if (i + x > height + center - 1) { // row too low
-//                 val += (image_s[TILE_WIDTH - 1][j + (y - center)] * kernel[x * (int) order + y]);
-//             } else if (j + y > width + center - 1) { // col too far right
-//                 val += (image_s[(i + (x - center)) * height + width - 1][TILE_WIDTH - 1] * kernel[x * (int) order + y]);
-//             } else {
-//                 val += (image_s[i][j] * kernel[x * (int) order + y]);
-//             }
-//         }
-//     }
-//     result_mat[i * height + j] = (unsigned char) val; 
-//     val = 0;
-// }
 
 void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *kernel, int width, int height, int order) 
 {
@@ -191,7 +127,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
     
-    sigma = atoi(argv[3]);
+    sigma = atof(argv[3]);
     if (sigma <= 0) {
         fprintf(stderr, "Error: invalid sigma value");
 		exit(1);
@@ -217,30 +153,18 @@ int main(int argc, char *argv[])
     fclose(input_file);
     
     float sum = 0;
-    // for (int i = 0; i < order; i++) {
-    //     for (int j = 0; j < order; j++) {
-    //         kernel[i * (int) order + j] = (1/(2*M_PI*sigma*sigma)) * 
-    //         exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
-    //         // printf("%.8f ", kernel[i * (int) order + j]);
-    //     }
-    //     // printf("\n");
-    // }
 
     for (int i = 0; i < order; i++) {
         for (int j = 0; j < order; j++) {
             kernel[i * (int) order + j] = exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
-            sum += exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
-            // printf("%.8f ", kernel[i * (int) order + j]);
+            sum += kernel[i * (int) order + j];
         }
-        // printf("\n");
     }
 
     for (int i = 0; i < order; i++) {
         for (int j = 0; j < order; j++) {
             kernel[i * (int) order + j] /= sum;
-            // printf("%.8f ", kernel[i * (int) order + j]);
         }
-        // printf("\n");
     }
     
     gaussian_calc(image_mat, result_mat, kernel, width, height,(int) order);
@@ -248,7 +172,9 @@ int main(int argc, char *argv[])
     // /* Save output image */
 	write_gaussian(output_filename, result_mat, width, height);
     
-	// free(filename);
+    free(kernel);
+    free(image_mat);
+    free(result_mat);
 
 	return 0;
 }

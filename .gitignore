@@ -6,3 +6,4 @@ Makefile
 gaussian_blur_serial
 gaussian_blur_cuda
 differences
+grade_gaussian_blur.sh

@@ -41,7 +41,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
     }
 }
 
-void write_mandelmap(char *filename, unsigned char *mandelmap, int width, int height)
+void write_gaussian(char *filename, unsigned char *picture, int width, int height)
 {
 	FILE *fp;
 
@@ -56,7 +56,7 @@ void write_mandelmap(char *filename, unsigned char *mandelmap, int width, int he
 	fprintf(fp, "P5\n%d %d\n255\n", width, height);
 
 	/* Output grayscale pixels */
-	fwrite(mandelmap, sizeof(unsigned char), width * height, fp);
+	fwrite(picture, sizeof(unsigned char), width * height, fp);
 
 	// free(pixels);
 	fclose(fp);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
     
-    sigma = atoi(argv[3]);
+    sigma = atof(argv[3]);
     if (sigma <= 0) {
         fprintf(stderr, "Error: invalid sigma value");
 		exit(1);
@@ -117,19 +117,11 @@ int main(int argc, char *argv[])
     fclose(input_file);
 
     float sum = 0;
-    // for (int i = 0; i < order; i++) {
-    //     for (int j = 0; j < order; j++) {
-    //         kernel[i * (int) order + j] = (1/(2*M_PI*sigma*sigma)) * 
-    //         exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
-    //         // printf("%.8f ", kernel[i * (int) order + j]);
-    //     }
-    //     // printf("\n");
-    // }
 
     for (int i = 0; i < order; i++) {
         for (int j = 0; j < order; j++) {
             kernel[i * (int) order + j] = exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
-            sum += exp(-(pow(i - floor(order/2), 2) + pow(j - floor(order/2), 2))/(2 * sigma * sigma));
+            sum += kernel[i * (int) order + j];
         }
     }
 
@@ -140,10 +132,13 @@ int main(int argc, char *argv[])
     }
     
     gaussian_calc(image_mat, result_mat, kernel, width, height, order);
-    // /* Save output image */
-	write_mandelmap(output_filename, result_mat, width, height);
+
+    /* Save output image */
+	write_gaussian(output_filename, result_mat, width, height);
     
-	// free(filename);
+	free(kernel);
+    free(image_mat);
+    free(result_mat);
 
 	return 0;
 }
