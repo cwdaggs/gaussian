@@ -18,7 +18,7 @@ __constant__ int height_d;
 __constant__ int order_d;
 
 __global__ void gaussian_calc_kernel(unsigned char *image_mat, unsigned char *result_mat, float *kernel) 
-{ //Naive implementation
+{ 
     float val = 0;
     
     int tx = threadIdx.x;
@@ -62,7 +62,7 @@ void gaussian_calc(unsigned char *image_mat, unsigned char *result_mat, float *k
     cuda_check(cudaMemcpyToSymbol(order_d, &order, sizeof(int)));
 
     /* Invoke kernel function */
-    dim3 block_dim(32, 32);
+    dim3 block_dim(779, 1);
     dim3 grid_dim(DIV_ROUND_UP(width, block_dim.x), DIV_ROUND_UP(height, block_dim.y));
     gaussian_calc_kernel<<<grid_dim, block_dim>>>(image_mat_d, result_mat_d, kernel_d);
 
